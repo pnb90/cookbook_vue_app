@@ -26,9 +26,38 @@
     <div v-for="recipe in recipes">
       <h2>{{ recipe.title }}</h2>
       <img v-bind:src="recipe.image_url" v-bind:alt="recipe.title">
-      <p>Prep Time: {{ recipe.prep_time }}</p>
-      <p>Ingredients: {{ recipe.ingredients }}</p>
-      <p>Directions: {{ recipe.directions }}</p>
+      <div>
+        <button v-on:click="showRecipe(recipe)">More Info</button>
+      </div>
+      <div v-if="recipe === currentRecipe">
+        <p>Prep Time: {{ recipe.prep_time }}</p>
+        <p>Ingredients: {{ recipe.ingredients }}</p>
+        <p>Directions: {{ recipe.directions }}</p>
+        <div>
+          <h4>Edit Recipe</h4>
+          <div>
+            <div>
+              Title: <input v-model="recipe.title">
+            </div>
+            <div>
+              Chef: <input v-model="recipe.chef">
+            </div>
+            <div>
+              Prep Time: <input v-model="recipe.prep_time">
+            </div>
+            <div>
+              Ingredients: <input v-model="recipe.ingredients">
+            </div>
+            <div>
+              Directions: <input v-model="recipe.Directions">
+            </div>
+            <div>
+              Image URL: <input v-model="recipe.image_url">
+            </div>
+            <button v-on:click="updateRecipe(recipe)">Update</button>
+          </div>  
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -51,7 +80,8 @@ export default {
       newRecipePrepTime: "",
       newRecipeIngredients: "",
       newRecipeDirections: "",
-      newRecipeImageUrl: ""
+      newRecipeImageUrl: "",
+      currentRecipe: {}
     };
   },
   created: function() { 
@@ -71,10 +101,32 @@ export default {
                     directions: this.newRecipeDirections,
                     image_url: this.newRecipeImageUrl
                    };
-    axios.post("/api/recipes", params)
+      axios.post("/api/recipes", params)
       .then(response => {
         console.log("Successful", response.data);
         this.recipes.push(response.data);
+      });
+    },
+    showRecipe: function(inputRecipe) {
+      if (this.currentRecipe === inputRecipe) {
+        this.currentRecipe = {};
+      } else {
+        this.currentRecipe = inputRecipe;
+      }
+    },
+    updateRecipe: function(inputRecipe) {
+      var params = {
+                    title: inputRecipe.title,
+                    chef: inputRecipe.chef,
+                    prep_time: inputRecipe.prep_time,
+                    ingredients: inputRecipe.ingredients,
+                    directions: inputRecipe.directions,
+                    image_url: inputRecipe.image_url
+                    };
+      axios.patch("/api/recipes/" + inputRecipe.id, params)
+      .then(response => {
+        console.log("Success", response.data);
+        inputRecipe = response.data;
       });
     }
   }
